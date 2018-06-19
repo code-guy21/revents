@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Segment, Form, Button } from "semantic-ui-react";
+import cuid from "cuid";
 
 const emptyState = {
   title: "",
@@ -14,27 +15,30 @@ class EventForm extends Component {
     event: emptyState
   };
 
-  componentDidMount() {
+  handleCreateEvent = newEvent => {
+    newEvent.id = cuid();
+    newEvent.hostPhotoURL = "/assets/user.png";
     this.setState({
-      event: this.props.selectedEvent ? this.props.selectedEvent : emptyState
+      events: [...this.state.events, newEvent],
+      isOpen: false
     });
-  }
+  };
 
-  componentWillReceiveProps(nextProps) {
-    console.log("current", this.props.selectedEvent);
-    console.log("next:", nextProps.selectedEvent);
+  handleUpdateEvent = updatedEvent => {
     this.setState({
-      event: nextProps.selectedEvent ? nextProps.selectedEvent : emptyState
+      events: this.state.events.map(event => {
+        if (event.id === updatedEvent.id) {
+          return Object.assign({}, updatedEvent);
+        } else {
+          return event;
+        }
+      })
     });
-  }
+  };
 
   onFormSubmit = event => {
     event.preventDefault();
-    if (this.state.event.id) {
-      this.props.updateEvent(this.state.event);
-    } else {
-      this.props.createEvent(this.state.event);
-    }
+    this.createEvent(this.state.event);
   };
 
   onInputChange = event => {
@@ -98,9 +102,7 @@ class EventForm extends Component {
           <Button positive type="submit">
             Submit
           </Button>
-          <Button onClick={this.props.cancel} type="button">
-            Cancel
-          </Button>
+          <Button type="button">Cancel</Button>
         </Form>
       </Segment>
     );

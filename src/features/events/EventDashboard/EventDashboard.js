@@ -57,48 +57,7 @@ const events = [
 
 class EventDashboard extends Component {
   state = {
-    events: events,
-    isOpen: false,
-    selectedEvent: null
-  };
-
-  handleFormOpen = () => {
-    this.setState({
-      selectedEvent: null,
-      isOpen: true
-    });
-  };
-
-  handleFormClose = () => {
-    this.setState({
-      isOpen: false
-    });
-  };
-
-  handleCreateEvent = newEvent => {
-    newEvent.id = cuid();
-    newEvent.hostPhotoURL = "/assets/user.png";
-    this.setState({
-      events: [...this.state.events, newEvent],
-      isOpen: false
-    });
-  };
-
-  handleUpdateEvent = updatedEvent => {
-    this.setState({
-      events: this.state.events.map(event => {
-        if (event.id === updatedEvent.id) {
-          return Object.assign({}, updatedEvent);
-        } else {
-          return event;
-        }
-      }),
-      isOpen: false
-    });
-  };
-
-  handleOpenEvent = eventToOpen => () => {
-    this.setState({ selectedEvent: eventToOpen, isOpen: true });
+    events: events
   };
 
   handleDeleteEvent = eventId => () => {
@@ -108,30 +67,13 @@ class EventDashboard extends Component {
   };
 
   render() {
-    const { selectedEvent } = this.state;
     return (
       <Grid>
         <Grid.Column width={10}>
           <EventList
             deleteEvent={this.handleDeleteEvent}
-            editEvent={this.handleOpenEvent}
             events={this.state.events}
           />
-        </Grid.Column>
-        <Grid.Column width={6}>
-          <Button
-            onClick={this.handleFormOpen}
-            positive
-            content="Create Event"
-          />
-          {this.state.isOpen && (
-            <EventForm
-              updateEvent={this.handleUpdateEvent}
-              selectedEvent={selectedEvent}
-              createEvent={this.handleCreateEvent}
-              cancel={this.handleFormClose}
-            />
-          )}
         </Grid.Column>
       </Grid>
     );
