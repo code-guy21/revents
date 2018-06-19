@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 import { Segment, Form, Button } from "semantic-ui-react";
+import { connect } from "react-redux";
+import { createEvent } from "../../../actions/index";
 import cuid from "cuid";
 
 const emptyState = {
@@ -7,7 +9,9 @@ const emptyState = {
   date: "",
   city: "",
   venue: "",
-  hostedBy: ""
+  hostedBy: "",
+  id: cuid(),
+  hostPhotoURL: "/assets/user.png"
 };
 
 class EventForm extends Component {
@@ -15,30 +19,11 @@ class EventForm extends Component {
     event: emptyState
   };
 
-  handleCreateEvent = newEvent => {
-    newEvent.id = cuid();
-    newEvent.hostPhotoURL = "/assets/user.png";
-    this.setState({
-      events: [...this.state.events, newEvent],
-      isOpen: false
-    });
-  };
-
-  handleUpdateEvent = updatedEvent => {
-    this.setState({
-      events: this.state.events.map(event => {
-        if (event.id === updatedEvent.id) {
-          return Object.assign({}, updatedEvent);
-        } else {
-          return event;
-        }
-      })
-    });
-  };
-
   onFormSubmit = event => {
     event.preventDefault();
-    this.createEvent(this.state.event);
+    this.props.createEvent(this.state.event, () => {
+      this.props.history.push("/events");
+    });
   };
 
   onInputChange = event => {
@@ -109,4 +94,7 @@ class EventForm extends Component {
   }
 }
 
-export default EventForm;
+export default connect(
+  null,
+  { createEvent }
+)(EventForm);
