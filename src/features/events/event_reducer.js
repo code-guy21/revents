@@ -1,7 +1,7 @@
-import { CREATE_EVENT, GET_EVENTS, DELETE_EVENT } from "../constants/constants";
+import { CREATE_EVENT, DELETE_EVENT, UPDATE_EVENT } from "./eventConstants";
 import { createReducer } from "../../app/common/util/reducerUtil";
 
-const eventStart = [
+const initialState = [
   {
     id: "1",
     title: "Trip to Tower of London",
@@ -52,20 +52,23 @@ const eventStart = [
   }
 ];
 
-export const getEvents = (state, payload) => {
-  return [...state, payload];
-};
-
 export const deleteEvent = (state, payload) => {
-  return state.filter(event => event.id !== payload);
+  return state.filter(event => event.id !== payload.eventId);
 };
 
 export const createEvent = (state, payload) => {
-  return [...state, payload];
+  return [...state, Object.assign({}, payload.event)];
 };
 
-export default createReducer(eventStart, {
-  [GET_EVENTS]: getEvents,
+export const updateEvent = (state, payload) => {
+  return [
+    ...state.filter(event => event.id !== payload.event.id),
+    Object.assign({}, payload.event)
+  ];
+};
+
+export default createReducer(initialState, {
+  [UPDATE_EVENT]: updateEvent,
   [DELETE_EVENT]: deleteEvent,
   [CREATE_EVENT]: createEvent
 });
