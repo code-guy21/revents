@@ -1,8 +1,10 @@
-import { combineReducers } from "redux";
-import eventReducer from "../.././features/events/event_reducer";
+import { combineReducers } from 'redux';
+import { reducer as FormReducer } from 'redux-form';
+import eventReducer from '../.././features/events/event_reducer';
 
 const rootReducer = combineReducers({
-  events: eventReducer
+	form: FormReducer,
+	events: eventReducer
 });
 
 export default rootReducer;
