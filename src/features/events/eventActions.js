@@ -1,3 +1,5 @@
+import { toastr } from 'react-redux-toastr';
+
 import {
 	CREATE_EVENT,
 	DELETE_EVENT,
@@ -28,18 +30,32 @@ export const deleteEvent = eventId => {
 };
 
 export const createEvent = (event, callback) => {
-	callback();
-	return {
-		type: CREATE_EVENT,
-		payload: { event }
+	return async dispatch => {
+		try {
+			dispatch({
+				type: CREATE_EVENT,
+				payload: { event }
+			});
+			toastr.success('Success!', 'Event has been created');
+			callback();
+		} catch (error) {
+			toastr.error('Oops', 'Something went wrong');
+		}
 	};
 };
 
 export const updateEvent = (event, callback) => {
-	callback();
-	return {
-		type: UPDATE_EVENT,
-		payload: { event }
+	return async dispatch => {
+		try {
+			dispatch({
+				type: UPDATE_EVENT,
+				payload: { event }
+			});
+			toastr.success('Success!', 'Event has been updated');
+			callback();
+		} catch (error) {
+			toastr.error('Oops', 'Something went wrong');
+		}
 	};
 };
 
