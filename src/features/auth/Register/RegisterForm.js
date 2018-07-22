@@ -6,9 +6,11 @@ import { connect } from 'react-redux';
 import { registerUser } from '../authActions';
 import { combineValidators, isRequired } from 'revalidate';
 import SocialLogin from '../SocialLogin/SocialLogin';
+import { socialLogin } from '../authActions';
 
 const actions = {
-	registerUser
+	registerUser,
+	socialLogin
 };
 
 const validate = combineValidators({
@@ -22,7 +24,8 @@ const RegisterForm = ({
 	registerUser,
 	error,
 	invalid,
-	submitting
+	submitting,
+	socialLogin
 }) => {
 	return (
 		<div>
@@ -60,7 +63,7 @@ const RegisterForm = ({
 						Register
 					</Button>
 					<Divider horizontal>Or</Divider>
-					<SocialLogin />
+					<SocialLogin socialLogin={socialLogin} />
 				</Segment>
 			</Form>
 		</div>

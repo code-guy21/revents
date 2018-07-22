@@ -1,6 +1,7 @@
 import { closeModal } from '../modals/modalActions';
 import { SubmissionError, reset } from 'redux-form';
 import { toastr } from 'react-redux-toastr';
+import { uploadProfileImage } from '../user/userActions';
 
 export const login = creds => {
 	return async (dispatch, getState, { getFirebase }) => {
@@ -28,8 +29,7 @@ export const registerUser = user => {
 			let createdUser = await firebase
 				.auth()
 				.createUserWithEmailAndPassword(user.email, user.password);
-			console.log(createdUser.user);
-			await createdUser.user.updateProfile({
+			await firebase.updateProfile({
 				displayName: user.displayName
 			});
 			let newUser = {
@@ -57,12 +57,33 @@ export const socialLogin = selectedProvider => {
 				provider: selectedProvider,
 				type: 'popup'
 			});
+			console.log(user);
 			if (user.additionalUserInfo.isNewUser) {
 				await firestore.set(`users/${user.user.uid}`, {
 					displayName: user.profile.displayName,
-					photoURL: user.profile.avatarUrl,
 					createdAt: firestore.FieldValue.serverTimestamp()
 				});
+
+				switch (user.additionalUserInfo.providerId) {
+					case 'google.com':
+						const googleresp = await fetch(
+							user.additionalUserInfo.profile.picture
+						);
+						const googleimage = await googleresp.blob();
+						console.log(googleimage);
+						dispatch(uploadProfileImage(googleimage, 'profilePicture'));
+						break;
+					case 'facebook.com':
+						const facebookresp = await fetch(
+							user.additionalUserInfo.profile.picture.data.url
+						);
+						const facebookimage = await facebookresp.blob();
+						console.log(facebookimage);
+						dispatch(uploadProfileImage(facebookimage, 'profilePicture'));
+						break;
+					default:
+						return;
+				}
 			}
 		} catch (error) {
 			console.log(error);

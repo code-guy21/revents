@@ -3,13 +3,12 @@ import { Menu, Image, Dropdown } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 
 const SignedInMenu = ({ signOut, profile }) => {
-	console.log(profile);
 	return (
 		<Menu.Item position="right">
 			<Image
 				avatar
 				spaced="right"
-				src={profile.avatarUrl || '/assets/user.png'}
+				src={profile.photoURL || profile.avatarUrl || '/assets/user.png'}
 			/>
 			<Dropdown pointing="top left" text={profile.displayName}>
 				<Dropdown.Menu>
