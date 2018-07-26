@@ -8,6 +8,7 @@ import UserInfo from './UserInfo';
 import UserPhotos from './UserPhotos';
 import UserEvents from './UserEvents';
 import UserSidebar from './UserSidebar';
+import LoadingComponent from '../../../app/layout/LoadingComponent';
 
 const query = ({ match }) => {
 	return [
@@ -35,14 +36,19 @@ const mapState = state => {
 	return {
 		auth: state.firebase.auth,
 		profile: user,
-		photos: state.firestore.ordered.photos
+		photos: state.firestore.ordered.photos,
+		requesting: state.firestore.status.requesting
 	};
 };
 
 class UserDetailedPage extends Component {
 	render() {
-		const { profile, photos, auth } = this.props;
+		const { profile, photos, auth, requesting } = this.props;
 		const isCurrentUser = profile.id === auth.uid;
+		const loading = Object.values(requesting).some(a => a === true);
+
+		if (loading) return <LoadingComponent inverted={true} />;
+
 		return (
 			<Grid>
 				<UserHeader user={profile} />

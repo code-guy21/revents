@@ -7,7 +7,7 @@ import { objectToArray } from '../../../app/common/util/helpers';
 
 class EventListItem extends Component {
 	render() {
-		const { event, deleteEvent } = this.props;
+		const { event } = this.props;
 		let eventDate;
 		if (event.date) {
 			eventDate = event.date.toDate();
@@ -62,13 +62,6 @@ class EventListItem extends Component {
 							color="teal"
 							floated="right"
 							content="View"
-						/>
-						<Button
-							onClick={deleteEvent(event.id)}
-							as="a"
-							color="red"
-							floated="right"
-							content="Delete"
 						/>
 					</div>
 				</Segment>

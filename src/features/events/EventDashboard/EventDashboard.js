@@ -5,7 +5,13 @@ import { connect } from 'react-redux';
 import { deleteEvent } from '../eventActions';
 import LoadingComponent from '../../../app/layout/LoadingComponent';
 import EventActivity from '../EventActivity/EventActivity';
-import { withFirestore } from 'react-redux-firebase';
+import { withFirestore, isLoaded, isEmpty } from 'react-redux-firebase';
+
+const mapStateToProps = state => {
+	return {
+		events: state.firestore.ordered.events
+	};
+};
 
 class EventDashboard extends Component {
 	async componentDidMount() {
@@ -23,8 +29,9 @@ class EventDashboard extends Component {
 	};
 
 	render() {
-		const { events, loading } = this.props;
-		if (loading) return <LoadingComponent inverted={true} />;
+		const { events } = this.props;
+		if (!isLoaded(events) || isEmpty(events))
+			return <LoadingComponent inverted={true} />;
 		return (
 			<Grid>
 				<Grid.Column width={10}>
@@ -37,13 +44,6 @@ class EventDashboard extends Component {
 		);
 	}
 }
-
-const mapStateToProps = state => {
-	return {
-		events: state.firestore.ordered.events,
-		loading: state.async.loading
-	};
-};
 
 export default withFirestore(
 	connect(
