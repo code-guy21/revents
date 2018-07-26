@@ -1,0 +1,21 @@
+import React from 'react';
+import { Grid, Segment, Image, Header } from 'semantic-ui-react';
+
+const UserPhotos = ({ photos }) => {
+	return (
+		<Grid.Column width={12}>
+			<Segment attached>
+				<Header icon="image" content="Photos" />
+
+				<Image.Group size="small">
+					{photos &&
+						photos.map(photo => {
+							return <Image key={photo.id} src={photo.url} />;
+						})}
+				</Image.Group>
+			</Segment>
+		</Grid.Column>
+	);
+};
+
+export default UserPhotos;

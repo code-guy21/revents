@@ -5,9 +5,19 @@ import { connect } from 'react-redux';
 import { deleteEvent } from '../eventActions';
 import LoadingComponent from '../../../app/layout/LoadingComponent';
 import EventActivity from '../EventActivity/EventActivity';
-import { firestoreConnect } from 'react-redux-firebase';
+import { withFirestore } from 'react-redux-firebase';
 
 class EventDashboard extends Component {
+	async componentDidMount() {
+		const { firestore } = this.props;
+		await firestore.setListener(`events`);
+	}
+
+	async componentWillUnmount() {
+		const { firestore } = this.props;
+		await firestore.unsetListener(`events`);
+	}
+
 	handleDeleteEvent = eventId => () => {
 		this.props.deleteEvent(eventId);
 	};
@@ -35,7 +45,9 @@ const mapStateToProps = state => {
 	};
 };
 
-export default connect(
-	mapStateToProps,
-	{ deleteEvent }
-)(firestoreConnect([{ collection: 'events' }])(EventDashboard));
+export default withFirestore(
+	connect(
+		mapStateToProps,
+		{ deleteEvent }
+	)(EventDashboard)
+);

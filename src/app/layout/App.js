@@ -6,7 +6,7 @@ import { Route, Switch } from 'react-router-dom';
 
 import EventForm from '../../features/events/EventForm/EventForm';
 import SettingsDashboard from '../../features/user/Settings/SettingsDashboard';
-import UserDetailedPage from '../../features/user/userDetailed/UserDetailedPage';
+import UserDetailedPage from '../../features/user/UserDetailed/UserDetailedPage';
 import PeopleDashboard from '../../features/user/PeopleDashboard/PeopleDashboard';
 import EventDetailedPage from '../../features/events/EventDetailed/EventDetailedPage';
 import HomePage from '../../features/home/HomePage';

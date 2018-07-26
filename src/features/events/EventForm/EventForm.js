@@ -2,35 +2,42 @@
 import React, { Component } from 'react';
 import { Segment, Form, Button, Grid, Header } from 'semantic-ui-react';
 import { connect } from 'react-redux';
+import { withFirestore } from 'react-redux-firebase';
 import { reduxForm, Field } from 'redux-form';
-import { createEvent, updateEvent } from '../eventActions';
+import { createEvent, updateEvent, cancelToggle } from '../eventActions';
 import {
 	composeValidators,
 	combineValidators,
 	isRequired,
 	hasLengthGreaterThan
 } from 'revalidate';
-import cuid from 'cuid';
 import TextInput from '../../../app/common/form/TextInput';
 import TextArea from '../../../app/common/form/TextArea';
 import SelectInput from '../../../app/common/form/SelectInput';
 import DateInput from '../../../app/common/form/DateInput';
 import PlaceInput from '../../../app/common/form/PlaceInput';
 import { geocodeByAddress, getLatLng } from 'react-places-autocomplete';
-import moment from 'moment';
 import Script from 'react-load-script';
+import moment from 'moment';
 
 const mapState = (state, ownProps) => {
-	const eventId = ownProps.match.params.id;
-	let event = {};
-
-	if (eventId && state.events.length > 0) {
-		event = state.events.filter(event => event.id === eventId)[0];
+	if (ownProps.match.path === '/createEvent') {
+		return { initialValues: {} };
 	}
 
-	return {
-		initialValues: event
-	};
+	let event = {};
+
+	if (state.firestore.ordered.events && state.firestore.ordered.events[0]) {
+		event = state.firestore.ordered.events[0];
+	}
+
+	if (event.date) {
+		var newDate = {
+			date: event.date.toDate()
+		};
+	}
+
+	return { initialValues: { ...event, ...newDate }, event };
 };
 
 const category = [
@@ -63,6 +70,16 @@ class EventForm extends Component {
 		scriptLoaded: false
 	};
 
+	async componentDidMount() {
+		const { firestore, match } = this.props;
+		await firestore.setListener(`events/${match.params.id}`);
+	}
+
+	async componentWillUnmount() {
+		const { firestore, match } = this.props;
+		await firestore.unsetListener(`events/${match.params.id}`);
+	}
+
 	handleScriptLoaded = () => {
 		this.setState({ scriptLoaded: true });
 	};
@@ -94,31 +111,30 @@ class EventForm extends Component {
 	};
 
 	onFormSubmit = values => {
-		values.date = moment(values.date).format();
 		values.venueLatLng = this.state.venueLatLng;
+		values.date = moment(values.date).toDate();
+		console.log(this.props);
 		if (this.props.initialValues.id) {
-			this.props.updateEvent(values, () => {
-				this.props.history.goBack();
-			});
+			if (Object.keys(values.venueLatLng).length === 0) {
+				values.venueLatLng = this.props.event.venueLatLng;
+			}
+			this.props.updateEvent(values);
+			this.props.history.push('/events');
 		} else {
-			const newEvent = {
-				...values,
-				id: cuid(),
-				hostPhotoURL: '/assets/user.png',
-				hostedBy: 'Bob'
-			};
-			this.props.createEvent(newEvent, () => {
-				this.props.history.push('/events');
+			this.props.createEvent(values, id => {
+				this.props.history.push(`/event/${id}`);
 			});
 		}
 	};
 
 	render() {
-		const { invalid, submitting, pristine } = this.props;
+		const { invalid, submitting, pristine, event, cancelToggle } = this.props;
 		return (
 			<Grid>
 				<Script
-					url="https://maps.googleapis.com/maps/api/js?key=AIzaSyCj_7R15jhHbfIiFuiFYKh3HAY_CKAHu8g&libraries=places"
+					url={`https://maps.googleapis.com/maps/api/js?key=${
+						process.env.REACT_APP_GOOGLE_KEY
+					}&libraries=places`}
 					onLoad={this.handleScriptLoaded}
 				/>
 				<Grid.Column width={10}>
@@ -187,6 +203,17 @@ class EventForm extends Component {
 							<Button onClick={this.props.history.goBack} type="button">
 								Cancel
 							</Button>
+							{event && (
+								<Button
+									onClick={() => cancelToggle(!event.cancelled, event.id)}
+									type="button"
+									color={event.cancelled ? 'green' : 'red'}
+									floated="right"
+									content={
+										event.cancelled ? 'Reactivate Event' : 'Cancel event'
+									}
+								/>
+							)}
 						</Form>
 					</Segment>
 				</Grid.Column>
@@ -195,11 +222,13 @@ class EventForm extends Component {
 	}
 }
 
-export default connect(
-	mapState,
-	{ createEvent, updateEvent }
-)(
-	reduxForm({ form: 'eventForm', enableReinitialize: true, validate })(
-		EventForm
+export default withFirestore(
+	connect(
+		mapState,
+		{ createEvent, updateEvent, cancelToggle }
+	)(
+		reduxForm({ form: 'eventForm', enableReinitialize: true, validate })(
+			EventForm
+		)
 	)
 );

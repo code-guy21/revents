@@ -29,8 +29,10 @@ export const registerUser = user => {
 			let createdUser = await firebase
 				.auth()
 				.createUserWithEmailAndPassword(user.email, user.password);
+			console.log(createdUser);
 			await firebase.updateProfile({
-				displayName: user.displayName
+				displayName: user.displayName,
+				uid: createdUser.user.uid
 			});
 			let newUser = {
 				displayName: user.displayName,
@@ -53,14 +55,35 @@ export const socialLogin = selectedProvider => {
 		const firestore = getFirestore();
 		try {
 			dispatch(closeModal());
-			let user = await firebase.login({
-				provider: selectedProvider,
-				type: 'popup'
-			});
-			console.log(user);
+			let user;
+			switch (selectedProvider) {
+				case 'google':
+					let googleprovider = new firebase.auth.GoogleAuthProvider();
+					googleprovider.setCustomParameters({
+						prompt: 'select_account'
+					});
+					user = await firebase.auth().signInWithPopup(googleprovider);
+					break;
+				case 'facebook':
+					let facebookprovider = new firebase.auth.FacebookAuthProvider();
+					facebookprovider.setCustomParameters({
+						auth_type: 'reauthenticate'
+					});
+					user = await firebase.auth().signInWithPopup(facebookprovider);
+					break;
+				default:
+					return;
+			}
+
 			if (user.additionalUserInfo.isNewUser) {
+				await firebase.updateProfile({
+					displayName: user.user.displayName,
+					createdAt: firebase.database.ServerValue.TIMESTAMP,
+					uid: user.user.uid
+				});
+
 				await firestore.set(`users/${user.user.uid}`, {
-					displayName: user.profile.displayName,
+					displayName: user.user.displayName,
 					createdAt: firestore.FieldValue.serverTimestamp()
 				});
 
@@ -70,7 +93,6 @@ export const socialLogin = selectedProvider => {
 							user.additionalUserInfo.profile.picture
 						);
 						const googleimage = await googleresp.blob();
-						console.log(googleimage);
 						dispatch(uploadProfileImage(googleimage, 'profilePicture'));
 						break;
 					case 'facebook.com':
@@ -78,7 +100,7 @@ export const socialLogin = selectedProvider => {
 							user.additionalUserInfo.profile.picture.data.url
 						);
 						const facebookimage = await facebookresp.blob();
-						console.log(facebookimage);
+
 						dispatch(uploadProfileImage(facebookimage, 'profilePicture'));
 						break;
 					default:

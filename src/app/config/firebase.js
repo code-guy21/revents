@@ -9,7 +9,6 @@ const firebaseConfig = {
 	storageBucket: 'revents-2d8d9.appspot.com',
 	messagingSenderId: '1027303325634'
 };
-console.log(process.env);
 firebase.initializeApp(firebaseConfig);
 const firestore = firebase.firestore();
 const settings = {
