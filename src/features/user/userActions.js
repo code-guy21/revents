@@ -6,24 +6,25 @@ import {
 	asyncActionFinish,
 	asyncActionError
 } from '../async/asyncActions';
+import firebase from '../../app/config/firebase';
+import { FETCH_EVENTS } from '../events/eventConstants';
 
 export const updateProfile = user => {
 	return async (dispatch, getState, { getFirebase, getFirestore }) => {
 		const firebase = getFirebase();
 		const firestore = getFirestore();
-
 		const { isLoaded, isEmpty, ...updatedUser } = user;
 		if (updatedUser.dateOfBirth !== getState().firebase.profile.dateOfBirth) {
 			updatedUser.dateOfBirth = moment(updatedUser.dateOfBirth).toDate();
+		} else {
+			delete updatedUser.dateOfBirth;
 		}
 
 		try {
 			const currentUser = await firebase.auth().currentUser;
-
 			await firebase.updateProfile(updatedUser);
-			const { providerData, avatarUrl, ...data } = updatedUser;
-
-			await firestore.set(`users/${currentUser.uid}`, { ...data });
+			const { providerData, avatarUrl, createdAt, uid, ...data } = updatedUser;
+			await firestore.update(`users/${currentUser.uid}`, { ...data });
 			toastr.success('Success', 'Profile updated');
 		} catch (error) {
 			console.log(error);
@@ -31,7 +32,7 @@ export const updateProfile = user => {
 	};
 };
 
-export const uploadProfileImage = (file, fileName) => {
+export const uploadProfileImage = file => {
 	return async (dispatch, getState, { getFirebase, getFirestore }) => {
 		const imageName = cuid();
 		const firebase = getFirebase();
@@ -166,6 +167,60 @@ export const cancelJoin = event => {
 		} catch (error) {
 			console.log(error);
 			toastr.error('Oops', 'Something went wrong');
+		}
+	};
+};
+
+export const getUserEvents = (userUid, activeTab) => {
+	return async (dispatch, getState) => {
+		dispatch(asyncActionStart());
+		const firestore = firebase.firestore();
+		const today = new Date(Date.now());
+		let eventsRef = firestore.collection('event_attendee');
+		let query;
+		switch (activeTab) {
+			case 1: //past events
+				query = eventsRef
+					.where('userUid', '==', userUid)
+					.where('eventDate', '<=', today)
+					.orderBy('eventDate', 'desc');
+				break;
+
+			case 2:
+				query = eventsRef
+					.where('userUid', '==', userUid)
+					.where('eventDate', '>=', today)
+					.orderBy('eventDate');
+				break;
+			case 3:
+				query = eventsRef
+					.where('userUid', '==', userUid)
+					.where('host', '==', true)
+					.orderBy('eventDate', 'desc');
+				break;
+			default:
+				query = eventsRef.where('userUid', '==', userUid).orderBy('eventDate');
+				break;
+		}
+
+		try {
+			let querySnap = await query.get();
+			let events = [];
+
+			for (let i = 0; i < querySnap.docs.length; i++) {
+				let evt = await firestore
+					.collection('events')
+					.doc(querySnap.docs[i].data().eventId)
+					.get();
+				events.push({ ...evt.data(), id: evt.id });
+			}
+
+			dispatch({ type: FETCH_EVENTS, payload: { events } });
+
+			dispatch(asyncActionFinish());
+		} catch (error) {
+			console.log(error);
+			dispatch(asyncActionError());
 		}
 	};
 };

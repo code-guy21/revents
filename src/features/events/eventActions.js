@@ -1,33 +1,15 @@
 import { toastr } from 'react-redux-toastr';
 import { createNewEvent } from '../../app/common/util/helpers';
 import moment from 'moment';
+import firebase from '../../app/config/firebase';
 
-import {
-	DELETE_EVENT,
-	FETCH_EVENTS
-} from '../../features/events/eventConstants';
+import { FETCH_EVENTS } from '../../features/events/eventConstants';
 
 import {
 	asyncActionStart,
 	asyncActionFinish,
 	asyncActionError
 } from '../async/asyncActions';
-
-import { fetchSampleData } from '../../app/data/mockApi';
-
-export const fetchEvents = events => {
-	return {
-		type: FETCH_EVENTS,
-		payload: events
-	};
-};
-
-export const deleteEvent = eventId => {
-	return {
-		type: DELETE_EVENT,
-		payload: { eventId }
-	};
-};
 
 export const createEvent = (event, callback) => {
 	return async (dispatch, getState, { getFirestore, getFirebase }) => {
@@ -70,20 +52,6 @@ export const updateEvent = event => {
 	};
 };
 
-export const loadEvents = () => {
-	return async dispatch => {
-		try {
-			dispatch(asyncActionStart());
-			let events = await fetchSampleData();
-			dispatch(fetchEvents(events));
-			dispatch(asyncActionFinish());
-		} catch (error) {
-			console.log(error);
-			dispatch(asyncActionError());
-		}
-	};
-};
-
 export const cancelToggle = (cancelled, eventId) => {
 	return async (dispatch, getState, { getFirestore }) => {
 		const firestore = getFirestore();
@@ -100,6 +68,82 @@ export const cancelToggle = (cancelled, eventId) => {
 			});
 		} catch (error) {
 			console.log(error);
+		}
+	};
+};
+
+export const getEventsForDashboard = lastEvent => {
+	return async (dispatch, getState) => {
+		let today = new Date(Date.now());
+		const firestore = firebase.firestore();
+
+		const eventsRef = firestore.collection('events');
+
+		try {
+			dispatch(asyncActionStart());
+
+			let startAfter =
+				lastEvent &&
+				(await firestore
+					.collection('events')
+					.doc(lastEvent.id)
+					.get());
+
+			let query;
+
+			lastEvent
+				? (query = eventsRef
+						.where('date', '>=', today)
+						.orderBy('date')
+						.startAfter(startAfter)
+						.limit(2))
+				: (query = eventsRef
+						.where('date', '>=', today)
+						.orderBy('date')
+						.limit(2));
+
+			let querySnap = await query.get();
+
+			if (querySnap.docs.length === 0) {
+				dispatch(asyncActionFinish());
+				return querySnap;
+			}
+
+			let events = [];
+
+			for (let i = 0; i < querySnap.docs.length; i++) {
+				let evt = { ...querySnap.docs[i].data(), id: querySnap.docs[i].id };
+				events.push(evt);
+			}
+
+			dispatch({ type: FETCH_EVENTS, payload: { events } });
+			dispatch(asyncActionFinish());
+			return querySnap;
+		} catch (error) {
+			console.log(error);
+			dispatch(asyncActionError());
+		}
+	};
+};
+
+export const addEventComment = (eventId, values, parentId) => {
+	console.log(eventId, values);
+	return async (dispatch, getState, { getFirebase }) => {
+		const firebase = getFirebase();
+		const user = firebase.auth().currentUser;
+		let newComment = {
+			displayName: user.displayName,
+			photoURL: user.photoURL,
+			uid: user.uid,
+			text: values.comment,
+			date: Date.now(),
+			parentId: parentId
+		};
+		try {
+			await firebase.push(`event_chat/${eventId}`, newComment);
+		} catch (error) {
+			console.log(error);
+			toastr.error('Oops', 'Problem adding comment');
 		}
 	};
 };

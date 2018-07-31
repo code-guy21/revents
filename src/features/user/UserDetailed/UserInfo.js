@@ -5,7 +5,7 @@ import format from 'date-fns/format';
 const UserInfo = ({ user }) => {
 	let createdAt;
 	if (user.createdAt) {
-		createdAt = format(user.createdAt, 'D MMM YYYY');
+		createdAt = format(user.createdAt.toDate(), 'D MMM YYYY');
 	}
 	return (
 		<Grid.Column width={12}>

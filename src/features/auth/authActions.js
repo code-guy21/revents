@@ -32,7 +32,8 @@ export const registerUser = user => {
 			console.log(createdUser);
 			await firebase.updateProfile({
 				displayName: user.displayName,
-				uid: createdUser.user.uid
+				uid: createdUser.user.uid,
+				createdAt: firebase.database.ServerValue.TIMESTAMP
 			});
 			let newUser = {
 				displayName: user.displayName,
@@ -93,7 +94,7 @@ export const socialLogin = selectedProvider => {
 							user.additionalUserInfo.profile.picture
 						);
 						const googleimage = await googleresp.blob();
-						dispatch(uploadProfileImage(googleimage, 'profilePicture'));
+						dispatch(uploadProfileImage(googleimage));
 						break;
 					case 'facebook.com':
 						const facebookresp = await fetch(
@@ -101,7 +102,7 @@ export const socialLogin = selectedProvider => {
 						);
 						const facebookimage = await facebookresp.blob();
 
-						dispatch(uploadProfileImage(facebookimage, 'profilePicture'));
+						dispatch(uploadProfileImage(facebookimage));
 						break;
 					default:
 						return;

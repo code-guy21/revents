@@ -94,3 +94,8 @@ body {
   padding-bottom: 0 !important;
   padding-left: 2em !important;
 }
+
+.ui.comments .reply.form textarea {
+  font-size: 1em;
+  height: 4em;
+}
