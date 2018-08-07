@@ -30,5 +30,3 @@ store.firebaseAuthIsReady.then(() => {
 		document.getElementById('root')
 	);
 });
-
-registerServiceWorker();
