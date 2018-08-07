@@ -4,6 +4,7 @@ import { Button, Icon } from 'semantic-ui-react';
 const SocialLogin = ({ socialLogin }) => {
 	return (
 		<div>
+			{/*
 			<Button
 				onClick={() => socialLogin('facebook')}
 				type="button"
@@ -12,7 +13,7 @@ const SocialLogin = ({ socialLogin }) => {
 				color="facebook"
 			>
 				<Icon name="facebook" /> Login with Facebook
-			</Button>
+			</Button>*/}
 
 			<Button
 				onClick={() => socialLogin('google')}

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Segment, Image, Item, Header, Button } from 'semantic-ui-react';
+import { Segment, Image, Item, Header, Button, Label } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
 import format from 'date-fns/format';
 import { withFirestore } from 'react-redux-firebase';
@@ -19,7 +19,16 @@ const eventImageTextStyle = {
 
 class EventDetailedHeader extends Component {
 	render() {
-		const { event, isHost, isGoing, joinEvent, cancelJoin } = this.props;
+		const {
+			event,
+			authenticated,
+			isHost,
+			openModal,
+			isGoing,
+			joinEvent,
+			cancelJoin,
+			loading
+		} = this.props;
 		let eventDate;
 		if (event.date) {
 			eventDate = event.date.toDate();
@@ -55,15 +64,43 @@ class EventDetailedHeader extends Component {
 				<Segment attached="bottom">
 					{!isHost && (
 						<div>
-							{isGoing ? (
-								<Button onClick={() => cancelJoin(event)}>
-									Cancel My Place
-								</Button>
-							) : (
-								<Button onClick={() => joinEvent(event)} color="teal">
-									JOIN THIS EVENT
-								</Button>
-							)}
+							{isGoing &&
+								!event.cancelled && (
+									<Button onClick={() => cancelJoin(event)}>
+										Cancel My Place
+									</Button>
+								)}
+
+							{!isGoing &&
+								authenticated &&
+								!event.cancelled && (
+									<Button
+										loading={loading}
+										onClick={() => joinEvent(event)}
+										color="teal"
+									>
+										JOIN THIS EVENT
+									</Button>
+								)}
+
+							{!authenticated &&
+								!event.cancelled && (
+									<Button
+										loading={loading}
+										onClick={() => openModal('UnauthModal')}
+										color="teal"
+									>
+										JOIN THIS EVENT
+									</Button>
+								)}
+							{event.cancelled &&
+								!isHost && (
+									<Label
+										size="large"
+										color="red"
+										content="This event has been cancelled"
+									/>
+								)}
 						</div>
 					)}
 					{isHost && (

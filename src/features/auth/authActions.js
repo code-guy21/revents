@@ -29,7 +29,7 @@ export const registerUser = user => {
 			let createdUser = await firebase
 				.auth()
 				.createUserWithEmailAndPassword(user.email, user.password);
-			console.log(createdUser);
+
 			await firebase.updateProfile({
 				displayName: user.displayName,
 				uid: createdUser.user.uid,

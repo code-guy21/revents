@@ -16,9 +16,9 @@ class EventList extends Component {
 							initialLoad={false}
 						>
 							{events &&
-								events.map(event => (
-									<EventListItem key={event.id} event={event} />
-								))}
+								events.map(event => {
+									return <EventListItem key={event.id} event={event} />;
+								})}
 						</InfiniteScroll>
 					)}
 			</div>

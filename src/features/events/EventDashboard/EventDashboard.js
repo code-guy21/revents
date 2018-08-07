@@ -6,7 +6,6 @@ import { getEventsForDashboard } from '../eventActions';
 import LoadingComponent from '../../../app/layout/LoadingComponent';
 import EventActivity from '../EventActivity/EventActivity';
 import { withFirestore, firestoreConnect } from 'react-redux-firebase';
-import { compose } from 'redux';
 
 const query = [
 	{

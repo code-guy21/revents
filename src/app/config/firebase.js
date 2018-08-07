@@ -2,7 +2,7 @@ import firebase from 'firebase';
 import 'firebase/firestore';
 
 const firebaseConfig = {
-	apiKey: process.env.REACT_APP_FIREBASE_KEY,
+	apiKey: 'AIzaSyDJSzHTdY624-MmuVgHlj8LTv_9JvMZy8g',
 	authDomain: 'revents-2d8d9.firebaseapp.com',
 	databaseURL: 'https://revents-2d8d9.firebaseio.com',
 	projectId: 'revents-2d8d9',
