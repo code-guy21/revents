@@ -15,11 +15,11 @@ const UserInfo = ({ user }) => {
 						<Header icon="smile" content={`About ${user.displayName}`} />
 						<p>
 							I am a:{' '}
-							<strong>{user.occupation ? user.occupation : 'tbn'}</strong>
+							<strong>{user.occupation ? user.occupation : 'tb'}</strong>
 						</p>
 						<p>
 							Originally from{' '}
-							<strong>{user.origin ? user.origin : 'tbn'}</strong>
+							<strong>{user.origin ? user.origin : 'tb'}</strong>
 						</p>
 						<p>
 							Member Since: <strong>{createdAt}</strong>
